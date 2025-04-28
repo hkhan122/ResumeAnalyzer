@@ -1,5 +1,7 @@
 # Resume Analyzer
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A web application that uses AI to analyze and rate resumes on a scale of 1-10, providing constructive feedback.
 
 ## Features
@@ -81,6 +83,10 @@ npm start
 ## Note
 
 Make sure both the backend (Flask) and frontend (React) servers are running simultaneously for the application to work properly.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Troubleshooting
 

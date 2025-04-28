@@ -95,75 +95,141 @@ def extract_text_from_file(file):
         raise
 
 def analyze_resume(text):
-    """Analyze resume using BART model with structured prompting."""
+    """Analyze resume using Mistral-7B-Instruct-v0.3 with chunked processing."""
     try:
-        logger.info("Sending request to Hugging Face API")
+        logger.info("Preprocessing text for analysis")
         
-        # Create a focused prompt for analysis
-        prompt = f"""Analyze this resume and provide structured feedback:
+        # Clean and normalize the text
+        text = text.strip()
+        # Remove excessive whitespace
+        text = re.sub(r'\s+', ' ', text)
+        # Remove special characters that might cause issues
+        text = re.sub(r'[^\w\s.,;:!?()\-]', '', text)
+        
+        # Split text into sections based on common resume headers
+        sections = {
+            'experience': extract_section(text, r'(?i)(experience|work history|employment)'),
+            'education': extract_section(text, r'(?i)(education|academic|degree)'),
+            'skills': extract_section(text, r'(?i)(skills|technical|proficient)'),
+            'projects': extract_section(text, r'(?i)(projects|portfolio|work samples)')
+        }
+        
+        # Analyze each section
+        section_analyses = {}
+        for section_name, section_text in sections.items():
+            if section_text:
+                section_analyses[section_name] = analyze_section(section_name, section_text)
+        
+        # Combine analyses
+        combined_analysis = combine_analyses(section_analyses)
+        
+        logger.info("Successfully analyzed resume")
+        return combined_analysis
+            
+    except Exception as e:
+        logger.error(f"Error in analysis: {str(e)}")
+        return perform_local_analysis(text)
 
+def extract_section(text, pattern):
+    """Extract a specific section from the resume text."""
+    try:
+        # Find the section header
+        match = re.search(pattern, text)
+        if not match:
+            return None
+            
+        start_idx = match.start()
+        # Find the next section or end of text
+        next_section = re.search(r'(?i)(experience|work history|employment|education|academic|degree|skills|technical|proficient|projects|portfolio|work samples)', text[start_idx + 1:])
+        
+        if next_section:
+            end_idx = start_idx + 1 + next_section.start()
+        else:
+            end_idx = len(text)
+            
+        return text[start_idx:end_idx].strip()
+    except Exception as e:
+        logger.error(f"Error extracting section: {str(e)}")
+        return None
+
+def analyze_section(section_name, text):
+    """Analyze a specific section of the resume."""
+    try:
+        API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
+        
+        prompt = f"""<s>[INST] You are a professional resume analyst. Analyze this {section_name} section and provide feedback in this exact format:
+
+SECTION:
 {text}
 
-Provide a detailed analysis in the following format:
+ANALYSIS:
+Score (1-10): [number]
+Strengths: [2-3 specific points]
+Areas for Improvement: [2-3 specific points]
+Recommendations: [2-3 specific recommendations]
 
-OVERALL SCORE (1-10):
-[Score and brief justification]
+Do not summarize the section. Only provide analysis and feedback.[/INST]"""
 
-STRENGTHS:
-[Key strengths with examples]
-
-AREAS FOR IMPROVEMENT:
-[Specific areas needing improvement]
-
-SECTION ANALYSIS:
-[Format, Experience, Education, Skills, Projects]
-
-RECOMMENDATIONS:
-[Top 3 actionable improvements]
-
-Analysis:"""
-
-        # BART-specific parameters
         payload = {
             "inputs": prompt,
             "parameters": {
-                "max_length": 500,
-                "min_length": 200,
-                "do_sample": False
+                "max_new_tokens": 300,
+                "temperature": 0.2,
+                "top_p": 0.9,
+                "do_sample": True,
+                "return_full_text": False,
+                "repetition_penalty": 1.1
             }
         }
 
         response = requests.post(API_URL, headers=headers, json=payload)
-        logger.debug(f"API Response status: {response.status_code}")
-        logger.debug(f"API Response content: {response.text}")
         
-        if response.status_code == 403:
-            logger.error("Authentication failed. Please check your Hugging Face API key.")
-            return "Error: Authentication failed. Please check your API key."
-            
         if response.status_code != 200:
-            logger.warning(f"API Error ({response.status_code}): Falling back to local analysis")
-            return perform_local_analysis(text)
+            return None
             
-        # Parse the response
-        try:
-            result = response.json()[0]["summary_text"]
-            
-            # Clean up the response if needed
-            if not result.strip():
-                logger.warning("Empty response received, falling back to local analysis")
-                return perform_local_analysis(text)
-                
-            logger.info("Successfully received analysis from API")
-            return result.strip()
-            
-        except (KeyError, IndexError, json.JSONDecodeError) as e:
-            logger.error(f"Error parsing API response: {str(e)}")
-            return perform_local_analysis(text)
-            
+        result = response.json()[0]["generated_text"]
+        return result.strip()
+        
     except Exception as e:
-        logger.error(f"Error in API call: {str(e)}")
-        return perform_local_analysis(text)
+        logger.error(f"Error analyzing section: {str(e)}")
+        return None
+
+def combine_analyses(section_analyses):
+    """Combine analyses from different sections into a cohesive report."""
+    try:
+        # Calculate overall score
+        scores = []
+        for analysis in section_analyses.values():
+            if analysis:
+                score_match = re.search(r'Score \(1-10\): (\d+)', analysis)
+                if score_match:
+                    scores.append(float(score_match.group(1)))
+        
+        overall_score = sum(scores) / len(scores) if scores else 0
+        
+        # Format the combined analysis
+        combined = f"""OVERALL SCORE: {overall_score:.1f}/10
+
+DETAILED ANALYSIS:
+"""
+        
+        # Add each section's analysis
+        for section_name, analysis in section_analyses.items():
+            if analysis:
+                combined += f"\n{section_name.upper()} SECTION:\n{analysis}\n"
+        
+        # Add final recommendations
+        combined += """
+FINAL RECOMMENDATIONS:
+1. Ensure consistent formatting across all sections
+2. Add specific metrics and achievements where possible
+3. Highlight transferable skills and accomplishments"""
+        
+        return combined
+        
+    except Exception as e:
+        logger.error(f"Error combining analyses: {str(e)}")
+        return "Error combining analyses. Please try again."
 
 def perform_local_analysis(text):
     """Perform sophisticated local analysis of the resume."""

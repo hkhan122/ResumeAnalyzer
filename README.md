@@ -6,6 +6,13 @@ A powerful resume analysis tool that provides detailed feedback on your resume u
 
 ## Features
 
+- **Modern Web Interface**:
+  - Clean, responsive design
+  - Drag-and-drop file upload
+  - Real-time analysis feedback
+  - Interactive score display
+  - Mobile-friendly layout
+
 - **Multi-Format Support**: Upload resumes in PDF, DOCX, or TXT format
 - **Comprehensive Analysis**: Detailed evaluation of:
   - Work Experience
@@ -61,12 +68,15 @@ python app.py
 
 2. Access the web interface at `http://localhost:5000`
 
-3. Upload your resume file (PDF, DOCX, or TXT)
+3. Upload your resume:
+   - Drag and drop your file into the upload area, or
+   - Click to browse and select your file
+   - Supported formats: PDF, DOCX, TXT
 
-4. Receive detailed analysis including:
-   - Overall score
-   - Section-by-section analysis
-   - Specific strengths and areas for improvement
+4. View your analysis:
+   - Overall score with visual display
+   - Section-by-section breakdown
+   - Detailed strengths and areas for improvement
    - Actionable recommendations
 
 ## Project Structure
@@ -77,10 +87,31 @@ ResumeAnalyzer/
 ├── requirements.txt    # Python dependencies
 ├── .env               # Environment variables
 ├── templates/         # HTML templates
-│   └── index.html     # Main web interface
+│   └── index.html     # Modern web interface
 ├── instance/          # Uploaded files storage
 └── README.md         # Project documentation
 ```
+
+## User Interface Features
+
+### Upload Experience
+- Drag-and-drop file upload
+- File type validation
+- Visual feedback during upload
+- Clear error messages
+
+### Analysis Display
+- Prominent overall score
+- Section-specific scores
+- Expandable analysis sections
+- Formatted lists for easy reading
+- Responsive design for all devices
+
+### Interactive Elements
+- Hover effects on interactive elements
+- Loading animations during analysis
+- Clear section separation
+- Easy-to-read typography
 
 ## Analysis Features
 
@@ -114,7 +145,7 @@ ResumeAnalyzer/
 
 ## Response Format
 
-The analyzer provides feedback in a professional, easy-to-read format:
+The analyzer provides feedback in a modern, visually appealing format:
 
 ```
 Score: X.X/10
@@ -127,16 +158,84 @@ EXPERIENCE SECTION
 Score: X/10
 
 Strengths:
-[Specific strengths with examples]
+- [Specific strength 1]
+- [Specific strength 2]
+- [Specific strength 3]
 
 Areas for Improvement:
-[Specific areas needing improvement]
+- [Area for improvement 1]
+- [Area for improvement 2]
+- [Area for improvement 3]
 
 Recommendations:
-[Actionable recommendations]
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]
 
-[Additional sections follow same format...]
+EDUCATION SECTION
+--------------------------------------------------
+Score: X/10
+
+Strengths:
+- [Specific strength 1]
+- [Specific strength 2]
+- [Specific strength 3]
+
+Areas for Improvement:
+- [Area for improvement 1]
+- [Area for improvement 2]
+- [Area for improvement 3]
+
+Recommendations:
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]
+
+SKILLS SECTION
+--------------------------------------------------
+Score: X/10
+
+Strengths:
+- [Specific strength 1]
+- [Specific strength 2]
+- [Specific strength 3]
+
+Areas for Improvement:
+- [Area for improvement 1]
+- [Area for improvement 2]
+- [Area for improvement 3]
+
+Recommendations:
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]
+
+PROJECTS SECTION
+--------------------------------------------------
+Score: X/10
+
+Strengths:
+- [Specific strength 1]
+- [Specific strength 2]
+- [Specific strength 3]
+
+Areas for Improvement:
+- [Area for improvement 1]
+- [Area for improvement 2]
+- [Area for improvement 3]
+
+Recommendations:
+- [Recommendation 1]
+- [Recommendation 2]
+- [Recommendation 3]
 ```
+
+The analysis is displayed in a clean, modern interface with:
+- A prominent overall score at the top
+- Clear section separation with visual dividers
+- Consistent formatting across all sections
+- Easy-to-read bullet points
+- Responsive layout that works on all devices
 
 ## Scoring System
 

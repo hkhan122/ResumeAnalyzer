@@ -1,4 +1,5 @@
 # Resume Analyzer
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A powerful resume analysis tool that provides detailed feedback on your resume using advanced AI models. The analyzer evaluates various aspects of your resume and provides actionable recommendations for improvement.
@@ -18,6 +19,7 @@ A powerful resume analysis tool that provides detailed feedback on your resume u
   - Actionable recommendations
 - **AI-Powered Analysis**: Utilizes Mistral-7B-Instruct-v0.3 for sophisticated resume analysis
 - **Local Fallback**: Includes a robust local analysis system when API is unavailable
+- **Professional Formatting**: Clean, well-structured output with clear section separation
 
 ## Setup
 
@@ -68,40 +70,81 @@ python app.py
 - Checks for quantifiable achievements
 - Assesses leadership and management experience
 - Provides specific improvement suggestions
+- Scores based on content quality and impact
 
 ### Education Analysis
 - Reviews academic background presentation
 - Checks for relevant coursework and projects
 - Evaluates academic achievements
 - Suggests enhancements for academic section
+- Considers degree relevance and timeline
 
 ### Skills Analysis
 - Assesses technical skills presentation
 - Evaluates tool and framework proficiency
 - Checks for relevant certifications
 - Provides suggestions for skills enhancement
+- Analyzes skill depth and breadth
 
 ### Projects Analysis
 - Reviews project descriptions
 - Evaluates impact and results
 - Checks for specific contributions
 - Suggests improvements for project presentation
+- Assesses technical complexity
 
 ## Response Format
 
-The analyzer provides feedback in the following format:
+The analyzer provides feedback in a professional, easy-to-read format:
 
 ```
+RESUME ANALYSIS REPORT
+==================================================
+
 OVERALL SCORE: X.X/10
+==================================================
 
-DETAILED ANALYSIS:
-[Section-specific analyses]
+DETAILED ANALYSIS
+==================================================
 
-FINAL RECOMMENDATIONS:
-1. [Specific recommendation]
-2. [Specific recommendation]
-3. [Specific recommendation]
+[Section Name]
+--------------------------------------------------
+Score: X/10
+
+Strengths:
+[Specific strengths with examples]
+
+Areas for Improvement:
+[Specific areas needing improvement]
+
+Recommendations:
+[Actionable recommendations]
+
+[Additional sections follow same format...]
+
+==================================================
+KEY RECOMMENDATIONS
+==================================================
+1. [General recommendation 1]
+2. [General recommendation 2]
+...
+
+==================================================
+Note: Professional closing note
+==================================================
 ```
+
+## Scoring System
+
+- Each section is scored on a scale of 1-10
+- Scores are based on:
+  - Content quality and relevance
+  - Achievement quantification
+  - Professional presentation
+  - Technical depth
+  - Impact demonstration
+- Overall score is calculated as an average of section scores
+- Detailed feedback explains the scoring rationale
 
 ## Error Handling
 
@@ -110,6 +153,7 @@ The system includes robust error handling:
 - Section-specific error handling
 - Clear error messages for common issues
 - Automatic retry mechanisms
+- Score extraction from multiple formats
 
 ## Contributing
 

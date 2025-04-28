@@ -201,29 +201,81 @@ def combine_analyses(section_analyses):
         scores = []
         for analysis in section_analyses.values():
             if analysis:
-                score_match = re.search(r'Score \(1-10\): (\d+)', analysis)
+                # Try different score patterns
+                score_match = (
+                    re.search(r'Score \(1-10\): (\d+)', analysis) or  # Pattern 1
+                    re.search(r'SCORE: (\d+)', analysis) or           # Pattern 2
+                    re.search(r'Score: (\d+)', analysis)              # Pattern 3
+                )
                 if score_match:
                     scores.append(float(score_match.group(1)))
         
         overall_score = sum(scores) / len(scores) if scores else 0
         
         # Format the combined analysis
-        combined = f"""OVERALL SCORE: {overall_score:.1f}/10
+        combined = f"""RESUME ANALYSIS REPORT
+{'=' * 50}
 
-DETAILED ANALYSIS:
-"""
-        
-        # Add each section's analysis
+OVERALL SCORE: {overall_score:.1f}/10
+{'=' * 50}
+
+DETAILED ANALYSIS
+{'=' * 50}"""
+
+        # Add each section's analysis with improved formatting
         for section_name, analysis in section_analyses.items():
             if analysis:
-                combined += f"\n{section_name.upper()} SECTION:\n{analysis}\n"
+                # Extract score using multiple patterns
+                score_match = (
+                    re.search(r'Score \(1-10\): (\d+)', analysis) or  # Pattern 1
+                    re.search(r'SCORE: (\d+)', analysis) or           # Pattern 2
+                    re.search(r'Score: (\d+)', analysis)              # Pattern 3
+                )
+                section_score = score_match.group(1) if score_match else "N/A"
+                
+                # Extract strengths
+                strengths_match = re.search(r'Strengths:(.*?)(?=Areas for Improvement:|$)', analysis, re.DOTALL)
+                strengths = strengths_match.group(1).strip() if strengths_match else "No strengths identified"
+                
+                # Extract areas for improvement
+                improvements_match = re.search(r'Areas for Improvement:(.*?)(?=Recommendations:|$)', analysis, re.DOTALL)
+                improvements = improvements_match.group(1).strip() if improvements_match else "No areas for improvement identified"
+                
+                # Extract recommendations
+                recommendations_match = re.search(r'Recommendations:(.*?)$', analysis, re.DOTALL)
+                recommendations = recommendations_match.group(1).strip() if recommendations_match else "No recommendations provided"
+                
+                # Format section
+                combined += f"""
+{section_name.upper()}
+{'-' * 50}
+Score: {section_score}/10
+
+Strengths:
+{strengths}
+
+Areas for Improvement:
+{improvements}
+
+Recommendations:
+{recommendations}
+"""
         
         # Add final recommendations
-        combined += """
-FINAL RECOMMENDATIONS:
-1. Ensure consistent formatting across all sections
-2. Add specific metrics and achievements where possible
-3. Highlight transferable skills and accomplishments"""
+        combined += f"""
+{'=' * 50}
+KEY RECOMMENDATIONS
+{'=' * 50}
+1. Ensure consistent formatting and professional presentation across all sections
+2. Add specific metrics and quantifiable achievements where possible
+3. Highlight transferable skills and relevant accomplishments
+4. Provide more context and details for each role and project
+5. Include relevant coursework, certifications, or training programs
+
+{'=' * 50}
+Note: This analysis is based on the content and structure of your resume. 
+Consider implementing these recommendations to strengthen your professional profile.
+{'=' * 50}"""
         
         return combined
         

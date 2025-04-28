@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
 import tempfile
@@ -213,11 +213,7 @@ def combine_analyses(section_analyses):
         overall_score = sum(scores) / len(scores) if scores else 0
         
         # Format the combined analysis
-        combined = f"""RESUME ANALYSIS REPORT
-{'=' * 50}
-
-OVERALL SCORE: {overall_score:.1f}/10
-{'=' * 50}
+        combined = f"""Score: {overall_score:.1f}/10
 
 DETAILED ANALYSIS
 {'=' * 50}"""
@@ -247,7 +243,8 @@ DETAILED ANALYSIS
                 
                 # Format section
                 combined += f"""
-{section_name.upper()}
+
+{section_name.upper()} SECTION
 {'-' * 50}
 Score: {section_score}/10
 
@@ -260,22 +257,6 @@ Areas for Improvement:
 Recommendations:
 {recommendations}
 """
-        
-        # Add final recommendations
-        combined += f"""
-{'=' * 50}
-KEY RECOMMENDATIONS
-{'=' * 50}
-1. Ensure consistent formatting and professional presentation across all sections
-2. Add specific metrics and quantifiable achievements where possible
-3. Highlight transferable skills and relevant accomplishments
-4. Provide more context and details for each role and project
-5. Include relevant coursework, certifications, or training programs
-
-{'=' * 50}
-Note: This analysis is based on the content and structure of your resume. 
-Consider implementing these recommendations to strengthen your professional profile.
-{'=' * 50}"""
         
         return combined
         
@@ -448,6 +429,10 @@ Additional Tips:
     except Exception as e:
         logger.error(f"Error in local analysis: {str(e)}")
         return "Unable to analyze resume at this time. Please try again later."
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():

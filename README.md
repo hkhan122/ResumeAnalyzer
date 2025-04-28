@@ -21,6 +21,12 @@ A powerful resume analysis tool that provides detailed feedback on your resume u
 - **Local Fallback**: Includes a robust local analysis system when API is unavailable
 - **Professional Formatting**: Clean, well-structured output with clear section separation
 
+## Prerequisites
+
+- Python 3.8 or higher
+- pip (Python package manager)
+- A Hugging Face API key
+
 ## Setup
 
 1. Clone the repository:
@@ -35,7 +41,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -46,7 +52,7 @@ Create a `.env` file in the root directory with:
 HF_API_KEY=your_huggingface_api_key
 ```
 
-## Usage
+## Running the Application
 
 1. Start the Flask server:
 ```bash
@@ -62,6 +68,19 @@ python app.py
    - Section-by-section analysis
    - Specific strengths and areas for improvement
    - Actionable recommendations
+
+## Project Structure
+
+```
+ResumeAnalyzer/
+├── app.py              # Main Flask application
+├── requirements.txt    # Python dependencies
+├── .env               # Environment variables
+├── templates/         # HTML templates
+│   └── index.html     # Main web interface
+├── instance/          # Uploaded files storage
+└── README.md         # Project documentation
+```
 
 ## Analysis Features
 
@@ -98,16 +117,12 @@ python app.py
 The analyzer provides feedback in a professional, easy-to-read format:
 
 ```
-RESUME ANALYSIS REPORT
-==================================================
-
-OVERALL SCORE: X.X/10
-==================================================
+Score: X.X/10
 
 DETAILED ANALYSIS
 ==================================================
 
-[Section Name]
+EXPERIENCE SECTION
 --------------------------------------------------
 Score: X/10
 
@@ -121,17 +136,6 @@ Recommendations:
 [Actionable recommendations]
 
 [Additional sections follow same format...]
-
-==================================================
-KEY RECOMMENDATIONS
-==================================================
-1. [General recommendation 1]
-2. [General recommendation 2]
-...
-
-==================================================
-Note: Professional closing note
-==================================================
 ```
 
 ## Scoring System

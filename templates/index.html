@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #f3f4f6;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .upload-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .analyze-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .analyze-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .analyze-btn:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .score-container {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 1rem;
+            color: white;
+        }
+
+        .overall-score {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .score-label {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--secondary);
+            border-radius: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .section-score {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .strengths, .improvements, .recommendations {
+            margin-bottom: 1rem;
+        }
+
+        .strengths h3, .improvements h3, .recommendations h3 {
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        ul {
+            list-style-position: inside;
+            margin-left: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--secondary);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .upload-area {
+                padding: 2rem;
+            }
+
+            .overall-score {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Resume Analyzer</div>
+            <div class="subtitle">Get detailed feedback on your resume using AI</div>
+        </header>
+
+        <div class="upload-container">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Drag and drop your resume here or click to browse</div>
+                <div class="file-types">Supported formats: PDF, DOCX, TXT</div>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx,.txt">
+            </div>
+            <button class="analyze-btn" id="analyzeBtn" disabled>Analyze Resume</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Analyzing your resume...</div>
+        </div>
+
+        <div class="result-container" id="resultContainer">
+            <div class="score-container">
+                <div class="overall-score" id="overallScore">0.0</div>
+                <div class="score-label">Overall Score</div>
+            </div>
+
+            <div id="analysisResults">
+                <!-- Analysis results will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const resultContainer = document.getElementById('resultContainer');
+        const overallScore = document.getElementById('overallScore');
+        const analysisResults = document.getElementById('analysisResults');
+
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = '';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '';
+            const file = e.dataTransfer.files[0];
+            handleFile(file);
+        });
+
+        // Handle click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (file) {
+                const fileName = file.name;
+                const fileType = fileName.split('.').pop().toLowerCase();
+                
+                if (['pdf', 'docx', 'txt'].includes(fileType)) {
+                    uploadArea.innerHTML = `
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">${fileName}</div>
+                    `;
+                    analyzeBtn.disabled = false;
+                } else {
+                    alert('Please upload a PDF, DOCX, or TXT file.');
+                }
+            }
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            loading.style.display = 'block';
+            resultContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                displayResults(data.analysis);
+            } catch (error) {
+                alert('Error analyzing resume: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        function displayResults(analysis) {
+            console.log('Raw analysis:', analysis); // Debug log
+            
+            // Extract overall score
+            const scoreMatch = analysis.match(/Score: (\d+\.?\d*)/);
+            if (scoreMatch) {
+                overallScore.textContent = scoreMatch[1];
+            }
+
+            // Parse and display section analyses
+            const sections = analysis.split('\n\n');
+            let html = '';
+
+            sections.forEach(section => {
+                console.log('Processing section:', section); // Debug log
+                
+                // Check for section scores
+                const sectionScoreMatch = section.match(/(Experience|Education|Skills|Projects): (\d+\.?\d*)\/10/);
+                if (sectionScoreMatch) {
+                    const sectionName = sectionScoreMatch[1];
+                    const sectionScore = sectionScoreMatch[2];
+                    
+                    // Extract strengths, improvements, and recommendations
+                    const strengthsMatch = section.match(/Strengths:\n([\s\S]*?)(?=Areas for Improvement:|$)/);
+                    const improvementsMatch = section.match(/Areas for Improvement:\n([\s\S]*?)(?=Recommendations:|$)/);
+                    const recommendationsMatch = section.match(/Recommendations:\n([\s\S]*?)$/);
+
+                    html += `
+                        <div class="section">
+                            <div class="section-title">${sectionName}</div>
+                            <div class="section-score">Score: ${sectionScore}/10</div>
+                            
+                            ${strengthsMatch ? `
+                                <div class="strengths">
+                                    <h3>Strengths</h3>
+                                    <ul>${formatList(strengthsMatch[1])}</ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${improvementsMatch ? `
+                                <div class="improvements">
+                                    <h3>Areas for Improvement</h3>
+                                    <ul>${formatList(improvementsMatch[1])}</ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${recommendationsMatch ? `
+                                <div class="recommendations">
+                                    <h3>Recommendations</h3>
+                                    <ul>${formatList(recommendationsMatch[1])}</ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            if (!html) {
+                // If no sections were found, display the raw analysis
+                html = `<div class="section">
+                    <div class="section-title">Analysis</div>
+                    <pre style="white-space: pre-wrap;">${analysis}</pre>
+                </div>`;
+            }
+
+            analysisResults.innerHTML = html;
+            resultContainer.style.display = 'block';
+        }
+
+        function formatList(text) {
+            if (!text) return '';
+            return text.split('\n')
+                .filter(line => line.trim())
+                .map(line => `<li>${line.trim().replace(/^[-•*]\s*/, '')}</li>`)
+                .join('');
+        }
+    </script>
+</body>
+</html> 

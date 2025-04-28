@@ -1,4 +1,5 @@
 # Resume Analyzer
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A powerful resume analysis tool that provides detailed feedback on your resume using advanced AI models. The analyzer evaluates various aspects of your resume and provides actionable recommendations for improvement.
 

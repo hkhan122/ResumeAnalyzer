@@ -32,7 +32,7 @@ A powerful resume analysis tool that provides detailed feedback on your resume u
 
 - Python 3.8 or higher
 - pip (Python package manager)
-- A Hugging Face API key
+- A Mistral.ai API key
 
 ## Setup
 
@@ -56,7 +56,7 @@ pip install -r requirements.txt
 4. Set up environment variables:
 Create a `.env` file in the root directory with:
 ```
-HF_API_KEY=your_huggingface_api_key
+MISTRAL_API_KEY=your_mistral_api_key
 ```
 
 ## Running the Application

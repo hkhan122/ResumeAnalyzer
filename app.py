@@ -21,11 +21,13 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Configure Hugging Face
-HF_API_KEY = os.getenv('HF_API_KEY')
-# Using a more accessible model
-API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
-headers = {"Authorization": f"Bearer {HF_API_KEY}"}
+# Configure Mistral.ai
+MISTRAL_API_KEY = os.getenv('MISTRAL_API_KEY')
+API_URL = "https://api.mistral.ai/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {MISTRAL_API_KEY}",
+    "Content-Type": "application/json"
+}
 
 # Create uploads directory if it doesn't exist
 UPLOAD_FOLDER = 'instance/uploads'
@@ -155,8 +157,6 @@ def extract_section(text, pattern):
 def analyze_section(section_name, text):
     """Analyze a specific section of the resume."""
     try:
-        API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
-        
         prompt = f"""<s>[INST] You are a professional resume analyst. Analyze this {section_name} section and provide feedback in this exact format:
 
 SECTION:
@@ -171,15 +171,13 @@ Recommendations: [2-3 specific recommendations]
 Do not summarize the section. Only provide analysis and feedback.[/INST]"""
 
         payload = {
-            "inputs": prompt,
-            "parameters": {
-                "max_new_tokens": 300,
-                "temperature": 0.2,
-                "top_p": 0.9,
-                "do_sample": True,
-                "return_full_text": False,
-                "repetition_penalty": 1.1
-            }
+            "model": "mistral-tiny",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.2,
+            "max_tokens": 300,
+            "top_p": 0.9
         }
 
         response = requests.post(API_URL, headers=headers, json=payload)
@@ -187,7 +185,7 @@ Do not summarize the section. Only provide analysis and feedback.[/INST]"""
         if response.status_code != 200:
             return None
             
-        result = response.json()[0]["generated_text"]
+        result = response.json()["choices"][0]["message"]["content"]
         return result.strip()
         
     except Exception as e:

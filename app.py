@@ -10,6 +10,7 @@ import PyPDF2
 from io import BytesIO
 import re
 import json
+from docx import Document
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -63,6 +64,35 @@ def extract_text_from_pdf(file):
         logger.error(f"Error reading PDF: {str(e)}")
         raise
 
+def extract_text_from_docx(file):
+    """Extract text from DOCX files."""
+    try:
+        # Read the file content
+        file.seek(0)
+        doc = Document(file)
+        
+        # Extract text from paragraphs
+        text = ""
+        for paragraph in doc.paragraphs:
+            if paragraph.text.strip():
+                text += paragraph.text + "\n\n"
+        
+        # Extract text from tables
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.text.strip():
+                        text += cell.text + "\n"
+                text += "\n"
+        
+        if not text.strip():
+            raise ValueError("No text could be extracted from the DOCX file")
+            
+        return text
+    except Exception as e:
+        logger.error(f"Error reading DOCX: {str(e)}")
+        raise
+
 def extract_text_from_file(file):
     """Extract text from various file formats."""
     try:
@@ -75,15 +105,21 @@ def extract_text_from_file(file):
         if file_name.endswith('.pdf'):
             logger.info("Using PDF-specific extraction")
             return extract_text_from_pdf(file)
+        elif file_name.endswith('.docx'):
+            logger.info("Using DOCX-specific extraction")
+            return extract_text_from_docx(file)
         else:
-            # For other file types, try textract with encoding detection
+            # For plain text files, try textract with encoding detection
+            file.seek(0)
+            content = file.read()
+            
+            # Try UTF-8 first
             try:
-                file.seek(0)
-                content = file.read()
                 text = content.decode('utf-8')
             except UnicodeDecodeError:
                 # If UTF-8 fails, try to detect encoding
-                encoding = chardet.detect(content)['encoding']
+                detected = chardet.detect(content)
+                encoding = detected['encoding'] if detected and detected['encoding'] else 'latin-1'
                 logger.debug(f"Detected encoding: {encoding}")
                 text = content.decode(encoding)
         

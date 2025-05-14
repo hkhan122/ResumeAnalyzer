@@ -49,6 +49,7 @@ def extract_text_from_pdf(file):
             page_text = pdf_reader.pages[page_num].extract_text()
             if page_text:
                 text += page_text + "\n\n"
+        
 
         # Check if we got meaningful text
         if len(text.strip()) < 100:
@@ -192,75 +193,120 @@ Do not summarize the section. Only provide analysis and feedback.[/INST]"""
         logger.error(f"Error analyzing section: {str(e)}")
         return None
 
+# def combine_analyses(section_analyses):
+#     """Combine analyses from different sections into a cohesive report."""
+#     try:
+#         # Calculate overall score
+#         scores = []
+#         for analysis in section_analyses.values():
+#             if analysis:
+#                 # Try different score patterns
+#                 score_match = (
+#                     re.search(r'Score \(1-10\): (\d+)', analysis) or  # Pattern 1
+#                     re.search(r'SCORE: (\d+)', analysis) or           # Pattern 2
+#                     re.search(r'Score: (\d+)', analysis)              # Pattern 3
+#                 )
+#                 if score_match:
+#                     scores.append(float(score_match.group(1)))
+        
+#         overall_score = sum(scores) / len(scores) if scores else 0
+        
+#         # Format the combined analysis
+#         combined = f"""Score: {overall_score:.1f}/10
+
+# DETAILED ANALYSIS
+# {'=' * 50}"""
+
+#         # Add each section's analysis with improved formatting
+#         for section_name, analysis in section_analyses.items():
+#             if analysis:
+#                 # Extract score using multiple patterns
+#                 score_match = (
+#                     re.search(r'Score \(1-10\): (\d+)', analysis) or  # Pattern 1
+#                     re.search(r'SCORE: (\d+)', analysis) or           # Pattern 2
+#                     re.search(r'Score: (\d+)', analysis)              # Pattern 3
+#                 )
+#                 section_score = score_match.group(1) if score_match else "N/A"
+                
+#                 # Extract strengths
+#                 strengths_match = re.search(r'Strengths:(.*?)(?=Areas for Improvement:|$)', analysis, re.DOTALL)
+#                 strengths = strengths_match.group(1).strip() if strengths_match else "No strengths identified"
+                
+#                 # Extract areas for improvement
+#                 improvements_match = re.search(r'Areas for Improvement:(.*?)(?=Recommendations:|$)', analysis, re.DOTALL)
+#                 improvements = improvements_match.group(1).strip() if improvements_match else "No areas for improvement identified"
+                
+#                 # Extract recommendations
+#                 recommendations_match = re.search(r'Recommendations:(.*?)$', analysis, re.DOTALL)
+#                 recommendations = recommendations_match.group(1).strip() if recommendations_match else "No recommendations provided"
+                
+#                 # Format section
+#                 combined += f"""
+
+# {section_name.upper()} SECTION
+# {'-' * 50}
+# Score: {section_score}/10
+
+# Strengths:
+# {strengths}
+
+# Areas for Improvement:
+# {improvements}
+
+# Recommendations:
+# {recommendations}
+# """
+        
+#         return combined
+        
+#     except Exception as e:
+#         logger.error(f"Error combining analyses: {str(e)}")
+#         return "Error combining analyses. Please try again."
+
 def combine_analyses(section_analyses):
-    """Combine analyses from different sections into a cohesive report."""
+    """Combine analyses from different sections into structured JSON."""
     try:
-        # Calculate overall score
         scores = []
-        for analysis in section_analyses.values():
-            if analysis:
-                # Try different score patterns
-                score_match = (
-                    re.search(r'Score \(1-10\): (\d+)', analysis) or  # Pattern 1
-                    re.search(r'SCORE: (\d+)', analysis) or           # Pattern 2
-                    re.search(r'Score: (\d+)', analysis)              # Pattern 3
-                )
-                if score_match:
-                    scores.append(float(score_match.group(1)))
-        
-        overall_score = sum(scores) / len(scores) if scores else 0
-        
-        # Format the combined analysis
-        combined = f"""Score: {overall_score:.1f}/10
+        parsed_sections = {}
 
-DETAILED ANALYSIS
-{'=' * 50}"""
-
-        # Add each section's analysis with improved formatting
         for section_name, analysis in section_analyses.items():
             if analysis:
-                # Extract score using multiple patterns
+                # Extract score
                 score_match = (
-                    re.search(r'Score \(1-10\): (\d+)', analysis) or  # Pattern 1
-                    re.search(r'SCORE: (\d+)', analysis) or           # Pattern 2
-                    re.search(r'Score: (\d+)', analysis)              # Pattern 3
+                    re.search(r'Score \(1-10\): (\d+)', analysis) or
+                    re.search(r'SCORE: (\d+)', analysis) or
+                    re.search(r'Score: (\d+)', analysis)
                 )
-                section_score = score_match.group(1) if score_match else "N/A"
-                
-                # Extract strengths
-                strengths_match = re.search(r'Strengths:(.*?)(?=Areas for Improvement:|$)', analysis, re.DOTALL)
-                strengths = strengths_match.group(1).strip() if strengths_match else "No strengths identified"
-                
-                # Extract areas for improvement
-                improvements_match = re.search(r'Areas for Improvement:(.*?)(?=Recommendations:|$)', analysis, re.DOTALL)
-                improvements = improvements_match.group(1).strip() if improvements_match else "No areas for improvement identified"
-                
-                # Extract recommendations
-                recommendations_match = re.search(r'Recommendations:(.*?)$', analysis, re.DOTALL)
-                recommendations = recommendations_match.group(1).strip() if recommendations_match else "No recommendations provided"
-                
-                # Format section
-                combined += f"""
+                score = int(score_match.group(1)) if score_match else None
+                if score:
+                    scores.append(score)
 
-{section_name.upper()} SECTION
-{'-' * 50}
-Score: {section_score}/10
+                # Extract parts
+                strengths = re.search(r'Strengths:(.*?)(?=Areas for Improvement:|$)', analysis, re.DOTALL)
+                improvements = re.search(r'Areas for Improvement:(.*?)(?=Recommendations:|$)', analysis, re.DOTALL)
+                recommendations = re.search(r'Recommendations:(.*?)$', analysis, re.DOTALL)
 
-Strengths:
-{strengths}
+                parsed_sections[section_name] = {
+                    "score": score,
+                    "strengths": strengths.group(1).strip() if strengths else "",
+                    "improvements": improvements.group(1).strip() if improvements else "",
+                    "recommendations": recommendations.group(1).strip() if recommendations else ""
+                }
 
-Areas for Improvement:
-{improvements}
+        overall_score = sum(scores) / len(scores) if scores else 0
 
-Recommendations:
-{recommendations}
-"""
-        
-        return combined
-        
+        return {
+            "overall_score": round(overall_score, 1),
+            "sections": parsed_sections
+        }
+
     except Exception as e:
         logger.error(f"Error combining analyses: {str(e)}")
-        return "Error combining analyses. Please try again."
+        return {
+            "overall_score": 0,
+            "sections": {}
+        }
+
 
 def perform_local_analysis(text):
     """Perform sophisticated local analysis of the resume."""
@@ -449,7 +495,10 @@ def analyze():
         text = extract_text_from_file(file)
         analysis = analyze_resume(text)
         logger.info("Analysis complete")
-        return jsonify({'analysis': analysis})
+        print("=== Data Sent to Frontend ===")
+        print(analysis) 
+
+        return jsonify(analysis)
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
         return jsonify({

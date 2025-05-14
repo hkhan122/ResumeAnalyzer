@@ -880,7 +880,7 @@
                 
                 // Slight delay before showing results
                 setTimeout(() => {
-                    displayResults(data.analysis);
+                    displayResults(data);
                     
                     // Hide loading and show results
                     loading.style.display = 'none';
@@ -889,7 +889,6 @@
                     // Scroll to results
                     resultContainer.scrollIntoView({ behavior: 'smooth' });
                 }, 500);
-                
             } catch (error) {
                 alert('Error analyzing resume: ' + error.message);
                 loading.style.display = 'none';
@@ -916,22 +915,18 @@
         function displayResults(analysis) {
             console.log('Raw analysis:', analysis); // Debug log
             
-            // Extract overall score
-            const scoreMatch = analysis.match(/Score: (\d+\.?\d*)/);
-            const score = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
-            
-            // Update score display
-            overallScore.textContent = score.toFixed(1);
+            // Update overall score
+            overallScore.textContent = analysis.overall_score.toFixed(1);
             
             // Update circular progress
-            const percent = (score / 10) * 100;
+            const percent = (analysis.overall_score / 10) * 100;
             scoreCircle.style.setProperty('--percent', `${percent}%`);
             
             // Determine score color
             let scoreColor;
-            if (score >= 8) {
+            if (analysis.overall_score >= 8) {
                 scoreColor = 'var(--success)';
-            } else if (score >= 6) {
+            } else if (analysis.overall_score >= 6) {
                 scoreColor = 'var(--warning)';
             } else {
                 scoreColor = 'var(--error)';
@@ -940,94 +935,59 @@
             // Clear previous sections
             sectionsGrid.innerHTML = '';
             
-            // Parse and display section analyses
-            const sectionNames = ['EXPERIENCE', 'EDUCATION', 'SKILLS', 'PROJECTS'];
-            const sectionIcons = {
-                'EXPERIENCE': 'fas fa-briefcase',
-                'EDUCATION': 'fas fa-graduation-cap',
-                'SKILLS': 'fas fa-tools',
-                'PROJECTS': 'fas fa-code-branch'
-            };
-            
-            sectionNames.forEach(sectionName => {
-                // Find section in analysis
-                const sectionRegex = new RegExp(`${sectionName} SECTION\\n[-=]+\\nScore: (\\d+\\.?\\d*)\\/10\\n\\nStrengths:\\n([\\s\\S]*?)\\n\\nAreas for Improvement:\\n([\\s\\S]*?)\\n\\nRecommendations:\\n([\\s\\S]*?)(?=\\n\\n|$)`);
-                
-                const sectionMatch = analysis.match(sectionRegex);
-                if (sectionMatch) {
-                    const [, sectionScore, strengths, improvements, recommendations] = sectionMatch;
-                    
-                    // Determine score category
-                    const scoreValue = parseFloat(sectionScore);
-                    let scoreCategory = 'medium';
-                    if (scoreValue >= 8) scoreCategory = 'high';
-                    else if (scoreValue < 6) scoreCategory = 'low';
-                    
-                    // Calculate progress width
-                    const progressWidth = (scoreValue / 10) * 100;
-                    
-                    const sectionHtml = `
-                        <div class="section-card">
-                            <div class="section-progress" style="width: ${progressWidth}%"></div>
-                            <div class="section-header">
-                                <div class="section-title">
-                                    <i class="${sectionIcons[sectionName]}"></i>
-                                    ${sectionName.charAt(0) + sectionName.slice(1).toLowerCase()}
-                                </div>
-                                <div class="section-score" data-score="${scoreCategory}">${sectionScore}/10</div>
-                            </div>
-                            
-                            <div class="content-block strengths">
-                                <div class="content-title">
-                                    <i class="fas fa-star"></i>
-                                    Strengths
-                                    <div class="tooltip">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Areas where your resume performs well</span>
-                                    </div>
-                                </div>
-                                <ul class="content-list">${formatList(strengths)}</ul>
-                            </div>
-                            
-                            <div class="content-block improvements">
-                                <div class="content-title">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    Areas for Improvement
-                                    <div class="tooltip">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Aspects of your resume that could be enhanced</span>
-                                    </div>
-                                </div>
-                                <ul class="content-list">${formatList(improvements)}</ul>
-                            </div>
-                            
-                            <div class="content-block recommendations">
-                                <div class="content-title">
-                                    <i class="fas fa-lightbulb"></i>
-                                    Recommendations
-                                    <div class="tooltip">
-                                        <i class="fas fa-info-circle"></i>
-                                        <span class="tooltip-text">Specific suggestions to improve your resume</span>
-                                    </div>
-                                </div>
-                                <ul class="content-list">${formatList(recommendations)}</ul>
-                            </div>
-                        </div>
-                    `;
-                    
-                    sectionsGrid.innerHTML += sectionHtml;
-                }
-            });
-            
-            // If no sections were found, display the raw analysis
-            if (!sectionsGrid.innerHTML) {
-                sectionsGrid.innerHTML = `
+            // Display each section
+            Object.entries(analysis.sections).forEach(([sectionName, content]) => {
+                const sectionHtml = `
                     <div class="section-card">
-                        <div class="section-title">Analysis</div>
-                        <pre style="white-space: pre-wrap;">${analysis}</pre>
+                        <div class="section-progress" style="width: ${(content.score / 10) * 100}%"></div>
+                        <div class="section-header">
+                            <div class="section-title">
+                                <i class="${getSectionIcon(sectionName)}"></i>
+                                ${sectionName.charAt(0).toUpperCase() + sectionName.slice(1)}
+                            </div>
+                            <div class="section-score" data-score="${getScoreCategory(content.score)}">${content.score}/10</div>
+                        </div>
+                        
+                        <div class="content-block strengths">
+                            <div class="content-title">
+                                <i class="fas fa-star"></i>
+                                Strengths
+                                <div class="tooltip">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span class="tooltip-text">Areas where your resume performs well</span>
+                                </div>
+                            </div>
+                            <ul class="content-list">${formatList(content.strengths)}</ul>
+                        </div>
+                        
+                        <div class="content-block improvements">
+                            <div class="content-title">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Areas for Improvement
+                                <div class="tooltip">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span class="tooltip-text">Aspects of your resume that could be enhanced</span>
+                                </div>
+                            </div>
+                            <ul class="content-list">${formatList(content.improvements)}</ul>
+                        </div>
+                        
+                        <div class="content-block recommendations">
+                            <div class="content-title">
+                                <i class="fas fa-lightbulb"></i>
+                                Recommendations
+                                <div class="tooltip">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span class="tooltip-text">Specific suggestions to improve your resume</span>
+                                </div>
+                            </div>
+                            <ul class="content-list">${formatList(content.recommendations)}</ul>
+                        </div>
                     </div>
                 `;
-            }
+                
+                sectionsGrid.innerHTML += sectionHtml;
+            });
             
             // Show back to top button when scrolling
             window.addEventListener('scroll', () => {
@@ -1071,6 +1031,24 @@
         backToTop.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
+        // Helper function to get section icon
+        function getSectionIcon(sectionName) {
+            const icons = {
+                'experience': 'fas fa-briefcase',
+                'education': 'fas fa-graduation-cap',
+                'skills': 'fas fa-tools',
+                'projects': 'fas fa-code-branch'
+            };
+            return icons[sectionName] || 'fas fa-file-alt';
+        }
+
+        // Helper function to get score category
+        function getScoreCategory(score) {
+            if (score >= 8) return 'high';
+            if (score >= 6) return 'medium';
+            return 'low';
+        }
     </script>
 </body>
 </html>

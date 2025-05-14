@@ -205,7 +205,13 @@ Strengths: [2-3 specific points]
 Areas for Improvement: [2-3 specific points]
 Recommendations: [2-3 specific recommendations]
 
-Do not summarize the section. Only provide analysis and feedback.[/INST]"""
+Important:
+1. Keep each point concise but complete
+2. Ensure all recommendations are fully stated
+3. Do not summarize the section
+4. Only provide analysis and feedback
+5. Speak in the second person
+6. Make sure to complete all recommendations without cutting off[/INST]"""
 
         payload = {
             "model": "mistral-tiny",
@@ -213,7 +219,7 @@ Do not summarize the section. Only provide analysis and feedback.[/INST]"""
                 {"role": "user", "content": prompt}
             ],
             "temperature": 0.2,
-            "max_tokens": 300,
+            "max_tokens": 500,
             "top_p": 0.9
         }
 
